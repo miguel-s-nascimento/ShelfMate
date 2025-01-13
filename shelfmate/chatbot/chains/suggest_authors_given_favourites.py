@@ -142,22 +142,24 @@ class SuggestAuthorsGivenFavChain(Runnable):
         
         u_input = self.extract_chain.invoke(user_input)
 
-        # Check if the user has any books in their read list with a rating > 4
-        cursor = con.cursor()
-        cursor.execute("""
-            SELECT b.book_id, b.title 
-            FROM read_list rl
-            INNER JOIN books b ON rl.book_id = b.book_id
-            WHERE rl.username = ? AND b.rating >= 4
-        """, (username,))
-        favorite_books = cursor.fetchall()
-
-        if not favorite_books:
-            con.close()
-            return "You don't have any books with a rating higher or equal than 4 in your read list. Add some of your favorite books first so we can provide suggestions!"
+        
 
         # Suggest authors based on user's favorite books
         if u_input.which_fav == 'books':
+            # Check if the user has any books in their read list with a rating > 4
+            cursor = con.cursor()
+            cursor.execute("""
+                SELECT b.book_id, b.title 
+                FROM read_list rl
+                INNER JOIN books b ON rl.book_id = b.book_id
+                WHERE rl.username = ? AND b.rating >= 4
+            """, (username,))
+            favorite_books = cursor.fetchall()
+
+            if not favorite_books:
+                con.close()
+                return "You don't have any books with a rating higher or equal than 4 in your read list. Add some of your favorite books first so we can provide suggestions!"
+                
             book_ids = [book[0] for book in favorite_books]
 
             # Perform semantic search to find similar books
